@@ -28,7 +28,13 @@ void run_php(char *startup, char *shutdown, int iterations, char *filename)
 
 void usage(char *name)
 {
-	fprintf(stderr, "Usage: %s [-i iterations] [-a startup_script] [-z shutdown-script] script\n", name);
+	fprintf(stderr, "Usage: %s [-c <iterations>] [-a <startup>] [-z <shutdown>] <script>\n", name);
+	fprintf(stderr, "       %s -i\n\n", name);
+	fprintf(stderr, "  -i              Print phpinfo();\n");
+	fprintf(stderr, "  -c <iterations> Set number of iterations (default=2)\n");
+	fprintf(stderr, "  -a <startup>    Startup script, run once on start\n");
+	fprintf(stderr, "  -z <shutdown>   Shutdown script, executed one on end\n");
+	fprintf(stderr, "  <script>        Main script to be executed multiple times\n\n");
 }
 
 int main(int argc, char *argv[])
