@@ -1,0 +1,17 @@
+pconnect tester for PHP
+
+This is a small tool helping while testing persistent connections with PHP,
+without the need for installing and configuring a web server and the
+complexity added by such a web server.
+
+This tool simulates  multiple requests by running a PHP script multiple times
+simulating multiple requests. The executed script can then open persistent
+connections and verify the connection on following requests.
+
+This simplifies automation of tests and memory checking.
+
+Installation
+
+To install this tool you have to first compile PHP's embed SAPI as shared object
+(./configure --enable-embed=shared) and then link this code against the
+generated library.
