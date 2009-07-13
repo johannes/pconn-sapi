@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 			break;
 		case 'c':
 			iterations = atoi(optarg);
-			if (iterations > 1) {
+			if (iterations > 0) {
 				break;
 			}
 			/* fall through */
