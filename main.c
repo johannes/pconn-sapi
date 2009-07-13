@@ -37,15 +37,17 @@ int main(int argc, char *argv[])
 	int opt;
 	char *startup_script = NULL, *shutdown_script = NULL;
  
-	while ((opt = getopt(argc, argv, "hi:a:z:")) != -1) {
+	while ((opt = getopt(argc, argv, "hic:a:z:")) != -1) {
 		switch (opt) {
+		case 'i':
+			pconn_phpinfo();
 		case 'a':
 			startup_script = optarg;
 			break;
 		case 'z':
 			shutdown_script = optarg;
 			break;
-		case 'i':
+		case 'c':
 			iterations = atoi(optarg);
 			if (iterations > 1) {
 				break;

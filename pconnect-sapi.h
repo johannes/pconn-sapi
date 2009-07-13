@@ -14,4 +14,5 @@ Author: Johannes Schlüter
 
 int pconn_init_php();
 int pconn_shutdown_php();
+int pconn_phpinfo();
 int pconn_do_request(char *filename);

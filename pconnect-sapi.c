@@ -8,6 +8,7 @@ Author: Johannes Schlüter
 */
 
 #include <php_embed.h>
+#include <ext/standard/info.h>
 
 #ifdef ZTS
 	void ***tsrm_ls = NULL;
@@ -113,6 +114,19 @@ int pconn_shutdown_php()
 #ifdef ZTS
 	tsrm_shutdown();
 #endif
+	return SUCCESS;
+}
+
+int pconn_phpinfo()
+{
+	pconn_init_php();
+	if (php_request_startup(TSRMLS_C)==FAILURE) {
+		php_module_shutdown(TSRMLS_C);
+		return FAILURE;
+	}
+	php_print_info(0xFFFFFFFF TSRMLS_CC);
+	php_request_shutdown((void *) 0);
+	pconn_shutdown_php();
 	return SUCCESS;
 }
 
