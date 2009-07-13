@@ -14,4 +14,40 @@ Installation
 
 To install this tool you have to first compile PHP's embed SAPI as shared object
 (./configure --enable-embed=shared) and then link this code against the
-generated library.
+generated library. The current MAkefile s bund to my setup
+
+
+
+Trivial usage sample:
+
+$ cat start.php 
+<?php
+session_id('test');
+@session_start();
+$_SESSION['count'] = 0;
+
+
+$ cat test.php 
+<?php
+session_id('test');
+@session_start();
+$_SESSION['count']++;
+mysql_pconnect('localhost', 'root', '');
+echo "MySQL Thread: ", mysql_thread_id(), "\n";
+
+
+$ cat shutdown.php 
+<?php
+session_id('test');
+@session_start();
+echo "Count from session: ", $_SESSION['count'], "\n";
+
+
+$ ./pconnect-test -a start.php -z shutdown.php -i5 test.php
+MySQL Thread: 107
+MySQL Thread: 107
+MySQL Thread: 107
+MySQL Thread: 107
+MySQL Thread: 107
+Count from session: 5
+
