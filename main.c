@@ -13,44 +13,66 @@ Author: Johannes Schlüter
 
 #include "pconnect-sapi.h"
 
-void run_php(char *startup, char *shutdown, int iterations, char *filename TSRMLS_DC)
-{
-#ifdef ZTS
-	void ***tsrm_ls = NULL;
-#endif
+char *filename;
+char *startup_script = NULL;
+char *shutdown_script = NULL;
+int iterations;
 
-	pconn_init_php();
-#ifdef ZTS
-	tsrm_ls = ts_resource(0);
-#endif
-	if (startup)
-		pconn_do_request(startup TSRMLS_CC);
-	while (iterations--) {
+void run_php(TSRMLS_D)
+{
+	int i = iterations;
+	if (startup_script)
+		pconn_do_request(startup_script TSRMLS_CC);
+	while (i--) {
 		pconn_do_request(filename TSRMLS_CC);
 	}
-	if (shutdown)
-		pconn_do_request(shutdown TSRMLS_CC);
-	pconn_shutdown_php();
+	if (shutdown_script)
+		pconn_do_request(shutdown_script TSRMLS_CC);
+}
+
+void *php_thread(void *arg)
+{
+	TSRMLS_FETCH();
+	run_php(TSRMLS_C);
+	return NULL;
+}
+
+void run_threads(int concurrency)
+{
+	int i;
+	/* TODO: LIMIT!!!! */
+	pthread_t threads[100];
+
+	
+	for (i=0; i < concurrency && i < 100; i++) {
+		pthread_create(&threads[i], NULL, php_thread, NULL);
+	}
+	
+	for (i=0; i < concurrency && i < 100; i++) {
+		pthread_join(threads[i], NULL);
+	}
 }
 
 void usage(char *name)
 {
 	fprintf(stderr, "Usage: %s [-c <iterations>] [-a <startup>] [-z <shutdown>] <script>\n", name);
 	fprintf(stderr, "       %s -i\n\n", name);
-	fprintf(stderr, "  -i              Print phpinfo();\n");
-	fprintf(stderr, "  -c <iterations> Set number of iterations (default=2)\n");
-	fprintf(stderr, "  -a <startup>    Startup script, run once on start\n");
-	fprintf(stderr, "  -z <shutdown>   Shutdown script, executed one on end\n");
-	fprintf(stderr, "  <script>        Main script to be executed multiple times\n\n");
+	fprintf(stderr, "  -i               Print phpinfo();\n");
+	fprintf(stderr, "  -n <iterations>  Set number of iterations (default=2)\n");
+#ifdef ZTS
+	fprintf(stderr, "  -c <concurrency> Set the number of concurrent threads\n");
+#endif
+	fprintf(stderr, "  -a <startup>     Startup script, run once on start\n");
+	fprintf(stderr, "  -z <shutdown>    Shutdown script, executed one on end\n");
+	fprintf(stderr, "  <script>         Main script to be executed multiple times\n\n");
 }
 
 int main(int argc, char *argv[])
 {
-	int iterations = 2;
+	int concurrency = 1;
 	int opt;
-	char *startup_script = NULL, *shutdown_script = NULL;
  
-	while ((opt = getopt(argc, argv, "hic:a:z:")) != -1) {
+	while ((opt = getopt(argc, argv, "hin:c:a:z:")) != -1) {
 		switch (opt) {
 		case 'i':
 			pconn_phpinfo();
@@ -61,7 +83,12 @@ int main(int argc, char *argv[])
 		case 'z':
 			shutdown_script = optarg;
 			break;
+#ifdef ZTS
 		case 'c':
+			concurrency = atoi(optarg);
+			break;
+#endif
+		case 'n':
 			iterations = atoi(optarg);
 			if (iterations > 0) {
 				break;
@@ -81,7 +108,15 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	run_php(startup_script, shutdown_script, iterations, argv[optind]);
+	filename = argv[optind];
+
+	pconn_init_php();
+#ifdef ZTS
+	run_threads(concurrency);
+#else
+	run_php();
+#endif
+	pconn_shutdown_php();
 	return 0;
 }
 
