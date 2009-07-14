@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
 		switch (opt) {
 		case 'i':
 			pconn_phpinfo();
+			return 0;
 		case 'a':
 			startup_script = optarg;
 			break;
