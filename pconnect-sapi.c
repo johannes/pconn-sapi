@@ -10,10 +10,6 @@ Author: Johannes Schlüter
 #include <php_embed.h>
 #include <ext/standard/info.h>
 
-#ifdef ZTS
-	void ***tsrm_ls = NULL;
-#endif
-
 static int startup(sapi_module_struct *sapi_module)
 {
 	if (php_module_startup(sapi_module, NULL, 0)==FAILURE) {
@@ -92,7 +88,6 @@ int pconn_init_php()
 
 #ifdef ZTS
 	tsrm_startup(1, 1, 0, NULL);
-	tsrm_ls = ts_resource(0);
 #endif
 
 	sapi_startup(&pconn_module);
@@ -102,13 +97,13 @@ int pconn_init_php()
 	}
 
 	zend_llist_init(&global_vars, sizeof(char *), NULL, 0);
-	SG(request_info).argc=0;
-	SG(request_info).argv=NULL;
 	return SUCCESS;
 }
 
 int pconn_shutdown_php()
 {
+	TSRMLS_FETCH();
+
 	php_module_shutdown(TSRMLS_C);
 	sapi_shutdown();
 #ifdef ZTS
@@ -119,7 +114,16 @@ int pconn_shutdown_php()
 
 int pconn_phpinfo()
 {
+#ifdef ZTS
+	void ***tsrm_ls = NULL;
+#endif
+
 	pconn_init_php();
+
+#ifdef ZTS
+	tsrm_ls = ts_resource(0);
+#endif
+
 	if (php_request_startup(TSRMLS_C)==FAILURE) {
 		php_module_shutdown(TSRMLS_C);
 		return FAILURE;
@@ -130,9 +134,12 @@ int pconn_phpinfo()
 	return SUCCESS;
 }
 
-int pconn_do_request(char *filename)
+int pconn_do_request(char *filename TSRMLS_DC)
 {
 	zend_file_handle file_handle;
+
+	SG(request_info).argc=0;
+	SG(request_info).argv=NULL;
 
 	if (php_request_startup(TSRMLS_C)==FAILURE) {
 		php_module_shutdown(TSRMLS_C);

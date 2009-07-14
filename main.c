@@ -13,16 +13,23 @@ Author: Johannes Schlüter
 
 #include "pconnect-sapi.h"
 
-void run_php(char *startup, char *shutdown, int iterations, char *filename)
+void run_php(char *startup, char *shutdown, int iterations, char *filename TSRMLS_DC)
 {
+#ifdef ZTS
+	void ***tsrm_ls = NULL;
+#endif
+
 	pconn_init_php();
+#ifdef ZTS
+	tsrm_ls = ts_resource(0);
+#endif
 	if (startup)
-		pconn_do_request(startup);
+		pconn_do_request(startup TSRMLS_CC);
 	while (iterations--) {
-		pconn_do_request(filename);
+		pconn_do_request(filename TSRMLS_CC);
 	}
 	if (shutdown)
-		pconn_do_request(shutdown);
+		pconn_do_request(shutdown TSRMLS_CC);
 	pconn_shutdown_php();
 }
 
