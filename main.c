@@ -30,6 +30,7 @@ void run_php(TSRMLS_D)
 		pconn_do_request(shutdown_script TSRMLS_CC);
 }
 
+#ifdef ZTS
 void *php_thread(void *arg)
 {
 	TSRMLS_FETCH();
@@ -52,6 +53,7 @@ void run_threads(int concurrency)
 		pthread_join(threads[i], NULL);
 	}
 }
+#endif
 
 void usage(char *name)
 {
@@ -69,7 +71,9 @@ void usage(char *name)
 
 int main(int argc, char *argv[])
 {
+#ifdef ZTS
 	int concurrency = 1;
+#endif
 	int opt;
  
 	while ((opt = getopt(argc, argv, "hin:c:a:z:")) != -1) {
