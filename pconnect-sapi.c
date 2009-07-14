@@ -156,7 +156,9 @@ int pconn_do_request(char *filename)
 	}
 */
 
-	php_execute_script(&file_handle TSRMLS_CC);
+	zend_first_try {
+		php_execute_script(&file_handle TSRMLS_CC);
+	} zend_end_try();
 
 	php_request_shutdown((void *) 0);
 
