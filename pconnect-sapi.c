@@ -135,6 +135,7 @@ int pconn_do_request(char *filename TSRMLS_DC)
 {
 	zend_file_handle file_handle;
 
+	SG(options) |= SAPI_OPTION_NO_CHDIR;
 	SG(request_info).argc=0;
 	SG(request_info).argv=NULL;
 
