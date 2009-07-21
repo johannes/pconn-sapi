@@ -84,8 +84,6 @@ sapi_module_struct pconn_module = {
 
 int pconn_init_php()
 {
-	zend_llist global_vars;
-
 #ifdef ZTS
 	tsrm_startup(1, 1, 0, NULL);
 #endif
@@ -96,7 +94,6 @@ int pconn_init_php()
 		return FAILURE;
 	}
 
-	zend_llist_init(&global_vars, sizeof(char *), NULL, 0);
 	return SUCCESS;
 }
 
