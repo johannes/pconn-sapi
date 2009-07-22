@@ -20,34 +20,9 @@ generated library. The current MAkefile s bund to my setup
 
 Trivial usage sample:
 
-$ cat start.php 
-<?php
-session_id('test');
-@session_start();
-$_SESSION['count'] = 0;
+This package includes a simple sample:
+$ ./pconnect-test -a samples/start.php -z samples/shutdown.php -n10 samples/main.php 
 
-
-$ cat test.php 
-<?php
-session_id('test');
-@session_start();
-$_SESSION['count']++;
-mysql_pconnect('localhost', 'root', '');
-echo "MySQL Thread: ", mysql_thread_id(), "\n";
-
-
-$ cat shutdown.php 
-<?php
-session_id('test');
-@session_start();
-echo "Count from session: ", $_SESSION['count'], "\n";
-
-
-$ ./pconnect-test -a start.php -z shutdown.php -i5 test.php
-MySQL Thread: 107
-MySQL Thread: 107
-MySQL Thread: 107
-MySQL Thread: 107
-MySQL Thread: 107
-Count from session: 5
+If your PHP was compiled with --enable-maintainer-zts you can set concurrency:
+$ ./pconnect-test -a samples/start.php -z samples/shutdown.php -n10 -c5 samples/main.php 
 
