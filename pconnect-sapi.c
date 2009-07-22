@@ -7,9 +7,12 @@ This product includes PHP software, freely available from
 Author: Johannes Schlüter
 */
 
-#include <php_embed.h>
+#include <main/php.h>
+#include <main/php_main.h>
+#include <main/SAPI.h>
 #include <ext/standard/info.h>
 #include <ext/standard/php_var.h>
+#include <main/php_variables.h>
 
 static int startup(sapi_module_struct *sapi_module)
 {
@@ -198,11 +201,12 @@ int pconn_do_request(char *filename, unsigned char **user_data, size_t *user_dat
 			php_var_serialize(&buf, z_user_data_pp, &var_hash TSRMLS_CC);
 			PHP_VAR_SERIALIZE_DESTROY(var_hash);
 
-			*user_data = buf.c;
+			*user_data = malloc(buf.len);
+			strncpy(*user_data, buf.c, buf.len);
 			*user_data_len = buf.len;
+			efree(buf.c);
 
 			zval_dtor(z_user_data_p);
-
 		}
 	}
 
@@ -212,3 +216,4 @@ int pconn_do_request(char *filename, unsigned char **user_data, size_t *user_dat
 	return SUCCESS;
 }
 #undef SMART_STR_USE_REALLOC
+
