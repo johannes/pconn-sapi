@@ -13,6 +13,7 @@ Author: Johannes Schlüter
 #include <ext/standard/info.h>
 #include <ext/standard/php_var.h>
 #include <main/php_variables.h>
+#include <ext/standard/php_smart_str.h>
 
 #define PCONN_VAR "_PCONN"
 #define PCONN_SIZE sizeof(PCONN_VAR)
@@ -142,7 +143,6 @@ int pconn_phpinfo()
 	return SUCCESS;
 }
 
-#define SMART_STR_USE_REALLOC 1
 int pconn_do_request(char *filename, unsigned char **user_data, size_t *user_data_len TSRMLS_DC)
 {
 	zval *z_user_data_p;
@@ -207,7 +207,7 @@ int pconn_do_request(char *filename, unsigned char **user_data, size_t *user_dat
 			*user_data = malloc(buf.len);
 			strncpy(*user_data, buf.c, buf.len);
 			*user_data_len = buf.len;
-			efree(buf.c);
+			smart_str_free(&buf);
 
 			zval_dtor(z_user_data_p);
 		}
@@ -217,5 +217,4 @@ int pconn_do_request(char *filename, unsigned char **user_data, size_t *user_dat
 
 	return SUCCESS;
 }
-#undef SMART_STR_USE_REALLOC
 
