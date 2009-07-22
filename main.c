@@ -69,16 +69,16 @@ void run_threads(req_data *data, int concurrency)
 
 void usage(char *name, int status)
 {
-	fprintf(stderr, "Usage: %s [-n iterations] [-c <concurrency>] [-a <startup>] [-z <shutdown>] <script>\n", name);
-	fprintf(stderr, "       %s -i\n\n", name);
-	fprintf(stderr, "  -i               Print phpinfo();\n");
-	fprintf(stderr, "  -n <iterations>  Set number of iterations (default=2)\n");
+	fprintf(stderr, "Usage: %s [-n iterations] [-c <concurrency>] [-a <startup>] [-z <shutdown>] <script>\n"
+	                "       %s -i\n\n"
+	                "  -i               Print phpinfo();\n"
+	                "  -n <iterations>  Set number of iterations (default=2)\n"
 #ifdef ZTS
-	fprintf(stderr, "  -c <concurrency> Set the number of concurrent threads (def=1)\n");
+	                "  -c <concurrency> Set the number of concurrent threads (def=1)\n"
 #endif
-	fprintf(stderr, "  -a <startup>     Startup script, run once on start\n");
-	fprintf(stderr, "  -z <shutdown>    Shutdown script, executed one on end\n");
-	fprintf(stderr, "  <script>         Main script to be executed multiple times\n\n");
+	                "  -a <startup>     Startup script, run once on start\n"
+	                "  -z <shutdown>    Shutdown script, executed one on end\n"
+	                "  <script>         Main script to be executed multiple times\n\n", name, name);
 
 	exit(status);
 }
