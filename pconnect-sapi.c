@@ -9,6 +9,7 @@ Author: Johannes Schlüter
 
 #include <php_embed.h>
 #include <ext/standard/info.h>
+#include <ext/standard/php_var.h>
 
 static int startup(sapi_module_struct *sapi_module)
 {
@@ -84,16 +85,20 @@ sapi_module_struct pconn_module = {
 
 int pconn_init_php()
 {
+
 #ifdef ZTS
+	void ***tsrm_ls;
 	tsrm_startup(1, 1, 0, NULL);
+	tsrm_ls = (void ***) ts_resource_ex(0, NULL);
 #endif
 
 	sapi_startup(&pconn_module);
 	pconn_module.phpinfo_as_text = 1;
+
 	if (pconn_module.startup(&pconn_module)==FAILURE) {
 		return FAILURE;
 	}
-
+	zend_register_auto_global("_PCONN", sizeof("_PCONN")-1, NULL TSRMLS_CC);
 	return SUCCESS;
 }
 
@@ -131,8 +136,10 @@ int pconn_phpinfo()
 	return SUCCESS;
 }
 
-int pconn_do_request(char *filename TSRMLS_DC)
+#define SMART_STR_USE_REALLOC 1
+int pconn_do_request(char *filename, unsigned char **user_data, size_t *user_data_len TSRMLS_DC)
 {
+	zval *z_user_data_p;
 	zend_file_handle file_handle;
 
 	SG(options) |= SAPI_OPTION_NO_CHDIR;
@@ -154,19 +161,54 @@ int pconn_do_request(char *filename TSRMLS_DC)
 	file_handle.opened_path = NULL;
 	file_handle.free_filename = 0;
 
-/*
-	if (php_fopen_primary_script(&file_handle TSRMLS_CC) == FAILURE) {
-		fprintf(stderr, "Failed opening %s.\n", filename);
-		exit(1);
+
+	if (user_data) {
+		zval z_user_data;
+		z_user_data_p = &z_user_data;
+
+		if (*user_data) {
+			php_unserialize_data_t var_hash;
+
+			INIT_ZVAL(z_user_data);
+			PHP_VAR_UNSERIALIZE_INIT(var_hash);
+			if (!php_var_unserialize(&z_user_data_p, (const unsigned char **)user_data, (const unsigned char *)*user_data_len, &var_hash TSRMLS_CC)) {
+				PHP_VAR_UNSERIALIZE_DESTROY(var_hash);
+				php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Error unserializing user data");
+			}
+			PHP_VAR_UNSERIALIZE_DESTROY(var_hash);
+			free(*user_data);
+		} else  {
+			array_init(z_user_data_p);
+		}
+		ZEND_SET_GLOBAL_VAR_WITH_LENGTH("_PCONN", sizeof("_PCONN"), z_user_data_p, 2, 0);
 	}
-*/
 
 	zend_first_try {
 		php_execute_script(&file_handle TSRMLS_CC);
 	} zend_end_try();
 
+	if (user_data) {
+		zval **z_user_data_pp;
+		if (zend_hash_find(&EG(symbol_table), "_PCONN", sizeof("_PCONN"), (void **) &z_user_data_pp) == SUCCESS) {
+			
+			php_serialize_data_t var_hash;
+			smart_str buf = {0};
+
+			PHP_VAR_SERIALIZE_INIT(var_hash);
+			php_var_serialize(&buf, z_user_data_pp, &var_hash TSRMLS_CC);
+			PHP_VAR_SERIALIZE_DESTROY(var_hash);
+
+			*user_data = buf.c;
+			*user_data_len = buf.len;
+
+			zval_dtor(z_user_data_p);
+
+		}
+	}
+
+
 	php_request_shutdown((void *) 0);
 
 	return SUCCESS;
 }
-
+#undef SMART_STR_USE_REALLOC

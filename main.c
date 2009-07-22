@@ -22,16 +22,19 @@ typedef struct {
 
 void run_php(req_data *data TSRMLS_DC)
 {
+	unsigned char *user_data = NULL;
+	size_t user_data_len = 0;
 	int i = data->iterations;
+
 	if (data->startup_script) {
-		pconn_do_request(data->startup_script TSRMLS_CC);
+		pconn_do_request(data->startup_script, &user_data, &user_data_len TSRMLS_CC);
 	}
 	while (i--) {
-		pconn_do_request(data->main_script TSRMLS_CC);
+		pconn_do_request(data->main_script, &user_data, &user_data_len TSRMLS_CC);
 		usleep(1);
 	}
 	if (data->shutdown_script) {
-		pconn_do_request(data->shutdown_script TSRMLS_CC);
+		pconn_do_request(data->shutdown_script, &user_data, &user_data_len TSRMLS_CC);
 	}
 }
 
