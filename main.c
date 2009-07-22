@@ -70,7 +70,11 @@ void run_threads(req_data *data, int concurrency)
 
 void usage(char *name, int status)
 {
-	fprintf(stderr, "Usage: %s [-n iterations] [-c <concurrency>] [-a <startup>] [-z <shutdown>] <script>\n"
+	fprintf(stderr, "Usage: %s [-n iterations]"
+#ifdef ZTS
+		                 " [-c <concurrency>]"
+#endif
+		                 " [-a <startup>] [-z <shutdown>] <script>\n"
 	                "       %s -i\n\n"
 	                "  -i               Print phpinfo();\n"
 	                "  -n <iterations>  Set number of iterations (default=2)\n"
