@@ -14,6 +14,9 @@ Author: Johannes Schlüter
 #include <ext/standard/php_var.h>
 #include <main/php_variables.h>
 
+#define PCONN_VAR "_PCONN"
+#define PCONN_SIZE sizeof(PCONN_VAR)
+
 static int startup(sapi_module_struct *sapi_module)
 {
 	if (php_module_startup(sapi_module, NULL, 0)==FAILURE) {
@@ -101,7 +104,7 @@ int pconn_init_php()
 	if (pconn_module.startup(&pconn_module)==FAILURE) {
 		return FAILURE;
 	}
-	zend_register_auto_global("_PCONN", sizeof("_PCONN")-1, NULL TSRMLS_CC);
+	zend_register_auto_global(PCONN_VAR, PCONN_SIZE-1, NULL TSRMLS_CC);
 	return SUCCESS;
 }
 
@@ -183,7 +186,7 @@ int pconn_do_request(char *filename, unsigned char **user_data, size_t *user_dat
 		} else  {
 			array_init(z_user_data_p);
 		}
-		ZEND_SET_GLOBAL_VAR_WITH_LENGTH("_PCONN", sizeof("_PCONN"), z_user_data_p, 2, 0);
+		ZEND_SET_GLOBAL_VAR_WITH_LENGTH(PCONN_VAR, PCONN_SIZE, z_user_data_p, 2, 0);
 	}
 
 	zend_first_try {
@@ -192,7 +195,7 @@ int pconn_do_request(char *filename, unsigned char **user_data, size_t *user_dat
 
 	if (user_data) {
 		zval **z_user_data_pp;
-		if (zend_hash_find(&EG(symbol_table), "_PCONN", sizeof("_PCONN"), (void **) &z_user_data_pp) == SUCCESS) {
+		if (zend_hash_find(&EG(symbol_table), PCONN_VAR, PCONN_SIZE, (void **) &z_user_data_pp) == SUCCESS) {
 			
 			php_serialize_data_t var_hash;
 			smart_str buf = {0};
@@ -209,7 +212,6 @@ int pconn_do_request(char *filename, unsigned char **user_data, size_t *user_dat
 			zval_dtor(z_user_data_p);
 		}
 	}
-
 
 	php_request_shutdown((void *) 0);
 
