@@ -13,6 +13,8 @@ Author: Johannes Schlüter
 
 #include "pconnect-sapi.h"
 
+#define MAX_THREADS 255
+
 typedef struct {
 	int iterations;
 	char *main_script;
@@ -53,15 +55,14 @@ void *php_thread(void *arg)
 void run_threads(req_data *data, int concurrency)
 {
 	int i;
-	/* TODO: LIMIT!!!! */
-	pthread_t threads[100];
+	pthread_t threads[MAX_THREADS];
 
 	
-	for (i=0; i < concurrency && i < 100; i++) {
+	for (i=0; i < concurrency && i < MAX_THREADS; i++) {
 		pthread_create(&threads[i], NULL, php_thread, data);
 	}
 	
-	for (i=0; i < concurrency && i < 100; i++) {
+	for (i=0; i < concurrency && i < MAX_THREADS; i++) {
 		pthread_join(threads[i], NULL);
 	}
 }
@@ -74,11 +75,11 @@ void usage(char *name, int status)
 	                "  -i               Print phpinfo();\n"
 	                "  -n <iterations>  Set number of iterations (default=2)\n"
 #ifdef ZTS
-	                "  -c <concurrency> Set the number of concurrent threads (def=1)\n"
+	                "  -c <concurrency> Set the number of concurrent threads (default=1, max=%i)\n"
 #endif
 	                "  -a <startup>     Startup script, run once on start\n"
 	                "  -z <shutdown>    Shutdown script, executed one on end\n"
-	                "  <script>         Main script to be executed multiple times\n\n", name, name);
+	                "  <script>         Main script to be executed multiple times\n\n", name, name, MAX_THREADS);
 
 	exit(status);
 }
@@ -102,11 +103,15 @@ int main(int argc, char *argv[])
 		case 'z':
 			data.shutdown_script = optarg;
 			break;
-#ifdef ZTS
 		case 'c':
+#ifdef ZTS
 			concurrency = atoi(optarg);
-			break;
+			if (concurrency < 1 ||  concurrency > MAX_THREADS)
 #endif
+			{
+				usage(argv[0], 1); /*terminates */
+			}
+			break;
 		case 'n':
 			data.iterations = atoi(optarg);
 			if (data.iterations == 0) {
