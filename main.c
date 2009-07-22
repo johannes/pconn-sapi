@@ -36,6 +36,9 @@ void run_php(req_data *data TSRMLS_DC)
 	if (data->shutdown_script) {
 		pconn_do_request(data->shutdown_script, &user_data, &user_data_len TSRMLS_CC);
 	}
+	if (user_data) {
+	    free(user_data);
+	}
 }
 
 #ifdef ZTS
