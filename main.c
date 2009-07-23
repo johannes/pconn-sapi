@@ -32,8 +32,12 @@ void run_php(req_data *data TSRMLS_DC)
 		pconn_do_request(data->startup_script, &user_data, &user_data_len TSRMLS_CC);
 	}
 	while (i--) {
-		pconn_do_request(data->main_script, &user_data, &user_data_len TSRMLS_CC);
+		int retval;
+		retval = pconn_do_request(data->main_script, &user_data, &user_data_len TSRMLS_CC);
 		usleep(1);
+		if (retval) {
+			break;
+		}
 	}
 	if (data->shutdown_script) {
 		pconn_do_request(data->shutdown_script, &user_data, &user_data_len TSRMLS_CC);

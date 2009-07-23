@@ -148,6 +148,7 @@ int pconn_phpinfo()
 
 int pconn_do_request(char *filename, unsigned char **user_data, size_t *user_data_len TSRMLS_DC)
 {
+	int retval = FAILURE; /* failure by default */
 	zval *z_user_data_p;
 	zend_file_handle file_handle;
 
@@ -193,7 +194,7 @@ int pconn_do_request(char *filename, unsigned char **user_data, size_t *user_dat
 	}
 
 	zend_first_try {
-		php_execute_script(&file_handle TSRMLS_CC);
+		retval = php_execute_script(&file_handle TSRMLS_CC);
 	} zend_end_try();
 
 	if (user_data) {
@@ -218,6 +219,6 @@ int pconn_do_request(char *filename, unsigned char **user_data, size_t *user_dat
 
 	php_request_shutdown((void *) 0);
 
-	return SUCCESS;
+	return (retval == SUCCESS) ? SUCCESS : FAILURE;
 }
 
