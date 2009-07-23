@@ -5,3 +5,5 @@ if (function_exists('zend_thread_id')) {
 } else {
     echo "main\n";
 }
+
+exit(PCONN_SUCCESS);
