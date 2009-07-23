@@ -15,12 +15,15 @@ Author: Johannes Schlüter
 #include <main/php_variables.h>
 #include <ext/standard/php_smart_str.h>
 
+#include "pconnect.h"
+#include "pconnect-module.h"
+
 #define PCONN_VAR "_PCONN"
 #define PCONN_SIZE sizeof(PCONN_VAR)
 
 static int startup(sapi_module_struct *sapi_module)
 {
-	if (php_module_startup(sapi_module, NULL, 0)==FAILURE) {
+	if (php_module_startup(sapi_module, &pconnect_module_entry, 1)==FAILURE) {
 		return FAILURE;
 	}
 	return SUCCESS;
