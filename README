@@ -12,11 +12,12 @@ This simplifies automation of tests and memory checking.
 
 Installation
 
-To install this tool you have to first compile PHP's embed SAPI as shared object
-(./configure --enable-embed=shared) and then link this code against the
-generated library. The current MAkefile s bund to my setup
+For isntallation put this code into a directory sapi/pconn inside a PHP
+source tree, then run ./buildconf and ./configure PHP using the
+--enable-pconn switch. For testing multithreading make use of
+the --enable-maintainer-zts switch.
 
-
+When running make a binary sapi/pconn/pconn is created.
 
 Trivial usage sample:
 
