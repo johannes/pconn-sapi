@@ -129,7 +129,7 @@ static void pconn_version()
 int main(int argc, char *argv[])
 {
 #ifdef ZTS
-	int concurrency = 1;
+	int threads = 1;
 #endif
 	int opt;
 	req_data data = { 2, NULL, NULL, NULL };
@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
 
 	pconn_init_php();
 #ifdef ZTS
-	run_threads(&data, concurrency);
+	run_threads(&data, threads);
 #else
 	run_php(&data);
 #endif
