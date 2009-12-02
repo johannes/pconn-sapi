@@ -1,0 +1,2 @@
+This is a small smaple showing the use of $_PCONN. It uses zend_thread_id()
+to "visualize" threads which is only available in TSRM-debug builds.
