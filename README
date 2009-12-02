@@ -27,4 +27,7 @@ $ ./pconn -a samples/start.php -z samples/shutdown.php -n10 samples/main.php
 If your PHP was compiled with --enable-maintainer-zts you can run multiple
 threads:
 $ ./pconn -a samples/start.php -z samples/shutdown.php -n10 -t5 samples/main.php 
-
+This will first call start.php then 10x main.php and shutdown.php in the second
+case this will be done in 5 threads in parallel. This sample also demonstrates
+transport ofdata with $_PCONN which isathread-specificcontainer for data which
+is available in all requests.
