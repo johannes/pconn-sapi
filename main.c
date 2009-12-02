@@ -28,7 +28,7 @@ typedef struct {
 	char *shutdown_script;
 } req_data;
 
-void run_php(req_data *data TSRMLS_DC)
+static void run_php(req_data *data TSRMLS_DC)
 {
 	unsigned char *user_data = NULL;
 	size_t user_data_len = 0;
@@ -54,7 +54,7 @@ void run_php(req_data *data TSRMLS_DC)
 }
 
 #ifdef ZTS
-void *php_thread(void *arg)
+static void *php_thread(void *arg)
 {
 	req_data *data = (req_data *)arg;
 	TSRMLS_FETCH();
@@ -62,7 +62,7 @@ void *php_thread(void *arg)
 	return NULL;
 }
 
-void run_threads(req_data *data, int concurrency)
+static void run_threads(req_data *data, int concurrency)
 {
 	int i;
 	pthread_t threads[MAX_THREADS];
@@ -78,7 +78,7 @@ void run_threads(req_data *data, int concurrency)
 }
 #endif
 
-void usage(char *name, int status)
+static void usage(const char *name, const int status)
 {
 	fprintf(stderr, "Usage: %s [-n iterations]"
 #ifdef ZTS

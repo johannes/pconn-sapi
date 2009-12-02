@@ -65,7 +65,7 @@ static void log_message(char *message)
 }
 
 
-sapi_module_struct pconn_module = {
+static sapi_module_struct pconn_module = {
 	"pconnect",               /* name */
 	"persistent connection test", /* pretty name */
 
