@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (optind >= argc) {
-		usage(argv[0], 1); /* termina */
+		usage(argv[0], 1); /* terminates */
 	}
 
 	data.main_script = argv[optind];
