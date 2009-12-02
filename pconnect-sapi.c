@@ -116,6 +116,15 @@ int pconn_init_php()
 	return SUCCESS;
 }
 
+void pconn_set_ini_file(const char *file)
+{
+	if (pconn_module.php_ini_path_override) {
+		free(pconn_module.php_ini_path_override);
+	}
+	pconn_module.php_ini_path_override = strdup(file);
+}
+
+
 int pconn_shutdown_php()
 {
 	TSRMLS_FETCH();

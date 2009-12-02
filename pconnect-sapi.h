@@ -20,6 +20,7 @@
 
 int pconn_init_php();
 int pconn_shutdown_php();
+void pconn_set_ini_file(const char *file);
 int pconn_phpinfo();
 int pconn_do_request(char *filename, unsigned char **user_data, size_t *user_data_len TSRMLS_DC);
 

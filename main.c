@@ -82,16 +82,17 @@ void usage(char *name, int status)
 {
 	fprintf(stderr, "Usage: %s [-n iterations]"
 #ifdef ZTS
-		                 " [-c <concurrency>]"
+		                 " [-t <threads>]"
 #endif
 		                 " [-a <startup>] [-z <shutdown>] <script>\n"
 	                "       %s -v\n"
 	                "       %s -i\n\n"
 					"  -v               Print version information\n"
 	                "  -i               Print phpinfo();\n"
+	                "  -c <file>        Look for php.ini file in this directory\n"
 	                "  -n <iterations>  Set number of iterations (default=2)\n"
 #ifdef ZTS
-	                "  -c <concurrency> Set the number of concurrent threads (default=1, max=%i)\n"
+	                "  -t <threads>     Set the number of concurrent threads (default=1, max=%i)\n"
 #endif
 	                "  -a <startup>     Startup script, run once on start\n"
 	                "  -z <shutdown>    Shutdown script, executed one on end\n"
@@ -133,7 +134,7 @@ int main(int argc, char *argv[])
 	int opt;
 	req_data data = { 2, NULL, NULL, NULL };
  
-	while ((opt = getopt(argc, argv, "vhin:c:a:z:")) != -1) {
+	while ((opt = getopt(argc, argv, "vhit:n:c:a:z:")) != -1) {
 		switch (opt) {
 		case 'v':
 			pconn_version();
@@ -141,16 +142,19 @@ int main(int argc, char *argv[])
 		case 'i':
 			pconn_phpinfo();
 			return 0;
+		case 'c':
+			pconn_set_ini_file(optarg);
+			break;
 		case 'a':
 			data.startup_script = optarg;
 			break;
 		case 'z':
 			data.shutdown_script = optarg;
 			break;
-		case 'c':
+		case 't':
 #ifdef ZTS
-			concurrency = atoi(optarg);
-			if (concurrency < 1 ||  concurrency > MAX_THREADS)
+			threads = atoi(optarg);
+			if (threads < 1 ||  threads > MAX_THREADS)
 #endif
 			{
 				usage(argv[0], 1); /*terminates */
