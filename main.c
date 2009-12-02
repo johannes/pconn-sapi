@@ -87,7 +87,13 @@ void usage(char *name, int status)
 #endif
 	                "  -a <startup>     Startup script, run once on start\n"
 	                "  -z <shutdown>    Shutdown script, executed one on end\n"
-	                "  <script>         Main script to be executed multiple times\n\n", name, name, MAX_THREADS);
+	                "  <script>         Main script to be executed multiple times\n\n",
+			name,
+			name,
+#ifdef ZTS
+			MAX_THREADS
+#endif
+			);
 
 	exit(status);
 }
