@@ -15,6 +15,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#include "pconnect.h"
+#include "main/php_version.h"
 #include "pconnect-sapi.h"
 
 #define MAX_THREADS 255
@@ -83,7 +85,9 @@ void usage(char *name, int status)
 		                 " [-c <concurrency>]"
 #endif
 		                 " [-a <startup>] [-z <shutdown>] <script>\n"
+	                "       %s -v\n"
 	                "       %s -i\n\n"
+					"  -v               Print version information\n"
 	                "  -i               Print phpinfo();\n"
 	                "  -n <iterations>  Set number of iterations (default=2)\n"
 #ifdef ZTS
@@ -94,12 +98,31 @@ void usage(char *name, int status)
 	                "  <script>         Main script to be executed multiple times\n\n",
 			name,
 			name,
+			name
 #ifdef ZTS
-			MAX_THREADS
+			, MAX_THREADS
 #endif
 			);
 
 	exit(status);
+}
+
+static void pconn_version()
+{
+	printf("pconn test %s for PHP %s (built: %s %s) %s\n"
+			"Copyright (c) 2009 Johannes Schlueter\n"
+			"This product includes PHP software, freely available from <http://www.php.net/software/>.\n",
+			PCONN_VERSION, PHP_VERSION, __DATE__, __TIME__,
+#if ZEND_DEBUG && defined(HAVE_GCOV)
+			"(DEBUG GCOV)"
+#elif ZEND_DEBUG
+			"(DEBUG)"
+#elif defined(HAVE_GCOV)
+			"(GCOV)"
+#else
+			""
+#endif
+			);
 }
 
 int main(int argc, char *argv[])
@@ -110,8 +133,11 @@ int main(int argc, char *argv[])
 	int opt;
 	req_data data = { 2, NULL, NULL, NULL };
  
-	while ((opt = getopt(argc, argv, "hin:c:a:z:")) != -1) {
+	while ((opt = getopt(argc, argv, "vhin:c:a:z:")) != -1) {
 		switch (opt) {
+		case 'v':
+			pconn_version();
+			return 0;
 		case 'i':
 			pconn_phpinfo();
 			return 0;
