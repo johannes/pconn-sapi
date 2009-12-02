@@ -22,9 +22,9 @@ When running `make` a binary `sapi/pconn/pconn` is created.
 Trivial usage sample:
 
 This package includes a simple sample:
-$ ./pconnect-test -a samples/start.php -z samples/shutdown.php -n10 samples/main.php 
+$ ./pconn -a samples/start.php -z samples/shutdown.php -n10 samples/main.php 
 
 If your PHP was compiled with --enable-maintainer-zts you can run multiple
 threads:
-$ ./pconnect-test -a samples/start.php -z samples/shutdown.php -n10 -t5 samples/main.php 
+$ ./pconn -a samples/start.php -z samples/shutdown.php -n10 -t5 samples/main.php 
 
