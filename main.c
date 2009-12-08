@@ -40,7 +40,6 @@ static void run_php(req_data *data TSRMLS_DC)
 	while (i--) {
 		int retval;
 		retval = pconn_do_request(data->main_script, &user_data, &user_data_len TSRMLS_CC);
-		usleep(1);
 		if (retval) {
 			break;
 		}
