@@ -163,6 +163,7 @@ int pconn_do_request(char *filename, unsigned char **user_data, size_t *user_dat
 {
 	int retval = FAILURE; /* failure by default */
 	zval *z_user_data_p;
+	unsigned char *user_data_p = *user_data;
 	zend_file_handle file_handle;
 
 	SG(options) |= SAPI_OPTION_NO_CHDIR;
@@ -199,7 +200,7 @@ int pconn_do_request(char *filename, unsigned char **user_data, size_t *user_dat
 				php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Error unserializing user data");
 			}
 			PHP_VAR_UNSERIALIZE_DESTROY(var_hash);
-			free(*user_data);
+			free(user_data_p);
 		} else  {
 			array_init(z_user_data_p);
 		}
