@@ -17,9 +17,9 @@ source tree, then run `./buildconf` and `./configure` PHP using the
 --enable-pconn switch. For testing multithreading make use of
 the --enable-maintainer-zts switch.
 
-When running `make` a binary `sapi/pconn/pconn` is created.
+When running `make` a binary `sapi/pconn/pconn` is created. Currently this won't
+be installed by make install.
 
-Trivial usage sample:
 
 This package includes a simple sample:
 $ ./pconn -a samples/start.php -z samples/shutdown.php -n10 samples/main.php 
