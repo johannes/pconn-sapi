@@ -155,15 +155,14 @@ int main(int argc, char *argv[])
 		case 'z':
 			data.shutdown_script = optarg;
 			break;
-		case 't':
 #ifdef ZTS
+		case 't':
 			threads = atoi(optarg);
-			if (threads < 1 ||  threads > MAX_THREADS)
-#endif
-			{
+			if (threads < 1 ||  threads > MAX_THREADS) {
 				usage(argv[0], 1); /*terminates */
 			}
 			break;
+#endif
 		case 'n':
 			data.iterations = atoi(optarg);
 			if (data.iterations == 0) {
