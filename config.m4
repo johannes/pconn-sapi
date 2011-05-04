@@ -7,7 +7,7 @@ AC_MSG_CHECKING(for pconn SAPI)
 PHP_ARG_ENABLE(pconn,,
 [  --enable-pconn          Build PHP as pconn test module (for extension developers], no)
 
-if test "$PHP_PCON" != "no"; then
+if test "$PHP_PCONN" != "no"; then
   PHP_ADD_MAKEFILE_FRAGMENT($abs_srcdir/sapi/pconn/Makefile.frag,$abs_srcdir/pconn/pconn,sapi/pconn)
   SAPI_PCONN_PATH=sapi/pconn/pconn
   PHP_SUBST(SAPI_PCONN_PATH)
