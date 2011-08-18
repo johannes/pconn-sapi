@@ -25,6 +25,11 @@
 #define PCONN_VAR "_PCONN"
 #define PCONN_SIZE sizeof(PCONN_VAR)
 
+const char HARDCODED_INI[] =
+	"html_errors=0\n"
+	"implicit_flush=1\n"
+	"output_buffering=0\n";
+
 static int startup(sapi_module_struct *sapi_module)
 {
 	if (php_module_startup(sapi_module, &pconnect_module_entry, 1)==FAILURE) {
@@ -99,6 +104,7 @@ static sapi_module_struct pconn_module = {
 
 int pconn_init_php()
 {
+	size_t ini_entries_len;
 
 #ifdef ZTS
 	void ***tsrm_ls;
@@ -108,6 +114,10 @@ int pconn_init_php()
 
 	sapi_startup(&pconn_module);
 	pconn_module.phpinfo_as_text = 1;
+
+	ini_entries_len = sizeof(HARDCODED_INI)-2;
+	pconn_module.ini_entries = malloc(sizeof(HARDCODED_INI));
+	memcpy(pconn_module.ini_entries, HARDCODED_INI, sizeof(HARDCODED_INI));
 
 	if (pconn_module.startup(&pconn_module)==FAILURE) {
 		return FAILURE;
