@@ -11,7 +11,11 @@
   +----------------------------------------------------------------------+
 */
 
-#define PCONN_VERSION "0.9"
+
+#define PCONN_VERSION "0.9.0"
+#define PCONN_MAJOR_VERSION 0
+#define PCONN_MINOR_VERSION 9
+#define PCONN_RELEASE_VERSION 0
 
 /*
  * Local variables:
