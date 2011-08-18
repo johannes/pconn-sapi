@@ -57,11 +57,16 @@ static void run_php(req_data *data TSRMLS_DC)
 	if (data->startup_script) {
 		pconn_do_request(data->startup_script, &user_data, &user_data_len TSRMLS_CC);
 	}
+	
 	while (i--) {
 		int retval;
 		retval = pconn_do_request(data->main_script, &user_data, &user_data_len TSRMLS_CC);
-		if (retval) {
+
+		if (retval == FAILURE) {
+#ifdef FIX_ME
+			/* On Windows I always reach this code path, dunno why */
 			break;
+#endif
 		}
 	}
 	if (data->shutdown_script) {
