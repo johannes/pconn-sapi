@@ -64,7 +64,11 @@ static void register_variables(zval *track_vars_array TSRMLS_DC)
 	php_import_environment_variables(track_vars_array TSRMLS_CC);
 }
 
+#if PHP_VERSION_ID >= 50400
+static void log_message(char *message TSRMLS_DC)
+#else
 static void log_message(char *message)
+#endif
 {
 	fprintf (stderr, "%s\n", message);
 }
@@ -122,7 +126,11 @@ int pconn_init_php()
 	if (pconn_module.startup(&pconn_module)==FAILURE) {
 		return FAILURE;
 	}
+#if PHP_VERSION_ID >= 50400
+	zend_register_auto_global(PCONN_VAR, PCONN_SIZE-1, 0, NULL TSRMLS_CC);
+#else
 	zend_register_auto_global(PCONN_VAR, PCONN_SIZE-1, NULL TSRMLS_CC);
+#endif
 	return SUCCESS;
 }
 
@@ -188,7 +196,7 @@ int pconn_do_request(char *filename, unsigned char **user_data, size_t *user_dat
 	SG(headers_sent) = 1;
 	SG(request_info).no_headers = 1;
 	php_register_variable("PHP_SELF", filename, NULL TSRMLS_CC);
-
+	
 	file_handle.type = ZEND_HANDLE_FILENAME;
 	file_handle.filename = filename;
 	file_handle.handle.fp = NULL;
