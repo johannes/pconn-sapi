@@ -1,0 +1,8 @@
+// vim:ft=javascript
+// $Id: config.w32 $
+
+ARG_ENABLE('pconn', 'Pconn SAPI library', 'no');
+
+if (PHP_PCONN != "no") {
+	SAPI('pconn', 'main.c pconnect-sapi.c pconnect-module.c', 'pconn.exe');
+}

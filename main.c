@@ -12,11 +12,16 @@
 */
 
 #include <stdio.h>
+#ifdef PHP_WIN32
+
+#else
 #include <unistd.h>
+#endif
 #include <stdlib.h>
 
 #include "pconnect.h"
 #include "main/php_version.h"
+#include "main/php_getopt.h"
 #include "pconnect-sapi.h"
 
 #define MAX_THREADS 255
@@ -27,6 +32,21 @@ typedef struct {
 	char *startup_script;
 	char *shutdown_script;
 } req_data;
+
+const opt_struct OPTIONS[] = {
+	{'v', 0, "version"},
+	{'h', 0, "help"},
+	{'i', 0, "info"},
+	{'c', 1, "php-ini"},
+#if ZTS
+	{'t', 1, "threads"},
+#endif
+	{'n', 1, "iterations"},
+	{'a', 1, "init-script"},
+	{'z', 1, "shutdown-script"},
+	{'-', 0, NULL}
+};
+
 
 static void run_php(req_data *data TSRMLS_DC)
 {
@@ -53,27 +73,43 @@ static void run_php(req_data *data TSRMLS_DC)
 }
 
 #ifdef ZTS
+#ifdef PHP_WIN32
+DWORD WINAPI php_thread(LPVOID arg)
+#else
 static void *php_thread(void *arg)
+#endif
 {
 	req_data *data = (req_data *)arg;
 	TSRMLS_FETCH();
 	run_php(data TSRMLS_CC);
+#ifdef PHP_WIN32
+	return 0;
+#else
 	return NULL;
+#endif
 }
 
 static void run_threads(req_data *data, int concurrency)
 {
 	int i;
-	pthread_t threads[MAX_THREADS];
+	HANDLE threads[MAX_THREADS];
 
 	
 	for (i=0; i < concurrency && i < MAX_THREADS; i++) {
+#ifdef PHP_WIN32
+		threads[i] = CreateThread(NULL, 0, php_thread, data, 0, NULL);
+#else
 		pthread_create(&threads[i], NULL, php_thread, data);
+#endif
 	}
 	
+#ifdef PHP_WIN32
+	WaitForMultipleObjects(concurrency, threads, TRUE, INFINITE);
+#else
 	for (i=0; i < concurrency && i < MAX_THREADS; i++) {
 		pthread_join(threads[i], NULL);
 	}
+#endif
 }
 #endif
 
@@ -136,9 +172,11 @@ int main(int argc, char *argv[])
 	int threads = 1;
 #endif
 	int opt;
+	char *php_optarg = NULL;
+	int php_optind = 1;
 	req_data data = { 2, NULL, NULL, NULL };
- 
-	while ((opt = getopt(argc, argv, "vhit:n:c:a:z:")) != -1) {
+
+	while ((opt = php_getopt(argc, argv, OPTIONS, &php_optarg, &php_optind, 0, 2)) != -1) {
 		switch (opt) {
 		case 'v':
 			pconn_version();
@@ -147,25 +185,25 @@ int main(int argc, char *argv[])
 			pconn_phpinfo();
 			return 0;
 		case 'c':
-			pconn_set_ini_file(optarg);
+			pconn_set_ini_file(php_optarg);
 			break;
 		case 'a':
-			data.startup_script = optarg;
+			data.startup_script = php_optarg;
 			break;
 		case 'z':
-			data.shutdown_script = optarg;
+			data.shutdown_script = php_optarg;
 			break;
 #ifdef ZTS
 		case 't':
-			threads = atoi(optarg);
+			threads = atoi(php_optarg);
 			if (threads < 1 ||  threads > MAX_THREADS) {
 				usage(argv[0], 1); /*terminates */
 			}
 			break;
 #endif
 		case 'n':
-			data.iterations = atoi(optarg);
-			if (data.iterations == 0) {
+			data.iterations = atoi(php_optarg);
+			if (data.iterations <= 0) {
 				usage(argv[0], 1); /*terminates */
 			}
 			break;
@@ -176,12 +214,12 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (optind >= argc) {
+	if (php_optind >= argc) {
 		usage(argv[0], 1); /* terminates */
 	}
 
-	data.main_script = argv[optind];
-
+	data.main_script = argv[php_optind];
+	
 	pconn_init_php();
 #ifdef ZTS
 	run_threads(&data, threads);
