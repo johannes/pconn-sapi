@@ -1,0 +1,99 @@
+/*
+  +----------------------------------------------------------------------+
+  | Copyright (c) 2011, Johannes Schlüter <johannes@schlueters.de>       |
+  | All rights reserved.                                                 |
+  +----------------------------------------------------------------------+
+  | Redistribution and use in source and binary forms, with or without   |
+  | modification, are permitted provided that the conditions which are   |
+  | bundled with this package in the file LICENSE.                       |
+  | This product includes PHP software, freely available from            |
+  |<http://www.php.net/software/>                                        |
+  +----------------------------------------------------------------------+
+*/
+
+/* Do not edit with MSVC */
+
+#ifdef APSTUDIO_INVOKED
+# error dont edit with MSVC
+#endif
+
+#include "winresrc.h"
+#include "main/php_version.h"
+#include "pconnect.h"
+
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+#ifndef THANKS_GUYS
+# define THANKS_GUYS ""
+#endif
+
+#ifdef WANT_LOGO
+0 ICON win32\build\php.ico
+#endif
+
+#ifndef INTERNAL_NAME /* e.g. 'PHAR extension', 'CGI SAPI' */
+# ifdef FILE_DESCRIPTION
+#define INTERNAL_NAME FILE_DESCRIPTION /* e.g. 'PHP Script Interpreter', 'GD imaging' */
+# else
+#define INTERNAL_NAME FILE_NAME /* e.g. 'php5ts.dll', 'php_bz2.dll' */
+# endif
+#endif
+
+#ifndef URL
+#define URL "http://github.com/johannes/pconn-sapi"
+#endif
+
+#ifndef EXT_VERSION
+#define EXT_VERSION PCONN_VERSION
+#endif
+
+#ifndef EXT_FILE_VERSION
+#define EXT_FILE_VERSION PCONN_MAJOR_VERSION,PCONN_MINOR_VERSION,PCONN_RELEASE_VERSION
+#endif
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION EXT_FILE_VERSION
+ PRODUCTVERSION PCONN_MAJOR_VERSION,PCONN_MINOR_VERSION,PCONN_RELEASE_VERSION
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS (VS_FF_DEBUG|VS_FF_SPECIALBUILD)
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS VOS__WINDOWS32
+ FILETYPE VFT_DLL
+ FILESUBTYPE VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "Johannes Schlueter"
+            VALUE "FileDescription", "pconn SAPI for PHP " PHP_VERSION
+            VALUE "FileVersion", EXT_VERSION
+            VALUE "InternalName", INTERNAL_NAME
+            VALUE "LegalCopyright", "Copyright © 2009-2011 Johannes Schlueter"
+#ifdef JOHANNES_TRADEMARK_0
+            VALUE "LegalTrademarks", "PHP"
+#endif
+            VALUE "OriginalFilename", FILE_NAME
+            VALUE "ProductName", "pconn SAPI for PHP " PHP_VERSION
+            VALUE "ProductVersion", PCONN_VERSION
+#ifdef _DEBUG
+            VALUE "SpecialBuild", "Debug build"
+#endif
+            VALUE "URL", URL
+            VALUE "Comments", "This product includes PHP software, freely available from <http://www.php.net/software/>"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+#ifdef MC_INCLUDE
+#include MC_INCLUDE
+#endif
+
