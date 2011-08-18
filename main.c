@@ -109,16 +109,14 @@ static void run_threads(req_data *data, int concurrency)
 static void run_threads(req_data *data, int concurrency)
 {
 	int i;
-	thread_t threads[MAX_THREADS];
+	pthread_t threads[MAX_THREADS];
 
 	for (i=0; i < concurrency && i < MAX_THREADS; i++) {
 		pthread_create(&threads[i], NULL, php_thread, data);
 	}
 	
-	WaitForMultipleObjects(concurrency, threads, TRUE, INFINITE);
-
 	for (i=0; i < concurrency && i < MAX_THREADS; i++) {
-		CloseHandle(threads[i]);
+		pthread_join(threads[i], NULL);
 	}
 }
 #endif /* PHP_WIN32 */
