@@ -205,6 +205,7 @@ int pconn_do_request(char *filename, unsigned char **user_data, size_t *user_dat
 
 
 	if (user_data) {
+#ifdef JO0
 		zval z_user_data;
 		z_user_data_p = &z_user_data;
 
@@ -223,6 +224,7 @@ int pconn_do_request(char *filename, unsigned char **user_data, size_t *user_dat
 			array_init(z_user_data_p);
 		}
 		ZEND_SET_GLOBAL_VAR_WITH_LENGTH(PCONN_VAR, PCONN_SIZE, z_user_data_p, 2, 0);
+#endif
 	}
 
 	zend_first_try {
@@ -230,6 +232,7 @@ int pconn_do_request(char *filename, unsigned char **user_data, size_t *user_dat
 	} zend_end_try();
 
 	if (user_data) {
+#ifdef JO0
 		zval **z_user_data_pp;
 		if (zend_hash_find(&EG(symbol_table), PCONN_VAR, PCONN_SIZE, (void **) &z_user_data_pp) == SUCCESS) {
 			
@@ -247,6 +250,7 @@ int pconn_do_request(char *filename, unsigned char **user_data, size_t *user_dat
 
 			zval_dtor(z_user_data_p);
 		}
+#endif
 	}
 
 	php_request_shutdown((void *) 0);
