@@ -112,8 +112,6 @@ static sapi_module_struct pconn_module = {
 
 int pconn_init_php()
 {
-	size_t ini_entries_len;
-
 #ifdef ZTS
 	void ***tsrm_ls;
 	tsrm_startup(1, 1, 0, NULL);
@@ -123,7 +121,6 @@ int pconn_init_php()
 	sapi_startup(&pconn_module);
 	pconn_module.phpinfo_as_text = 1;
 
-	ini_entries_len = sizeof(HARDCODED_INI)-2;
 	pconn_module.ini_entries = malloc(sizeof(HARDCODED_INI));
 	memcpy(pconn_module.ini_entries, HARDCODED_INI, sizeof(HARDCODED_INI));
 
