@@ -1,3 +1,4 @@
 *.lo
 *.o
 pconn
+.*.swp
