@@ -137,7 +137,7 @@ static void run_threads(req_data *data, int concurrency)
 
 static void usage(const char *name, const int status)
 {
-	fprintf(stderr, "Usage: %s [-n iterations]"
+	fprintf(stderr, "Usage: %s [-p] [-n iterations]"
 #ifdef ZTS
 		                 " [-t <threads>]"
 #endif
@@ -156,8 +156,8 @@ static void usage(const char *name, const int status)
 					"\n                   limited use with multiple threads"
 #endif
 					")\n"
-	                "  -a <startup>     Startup script, run once on start\n"
-	                "  -z <shutdown>    Shutdown script, executed one on end\n"
+	                "  -a <startup>     Startup script, executed once on start\n"
+	                "  -z <shutdown>    Shutdown script, executed once on end\n"
 	                "  <script>         Main script to be executed multiple times\n\n"
 			, name
 			, name
