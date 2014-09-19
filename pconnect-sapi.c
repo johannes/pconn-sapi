@@ -38,7 +38,11 @@ static int startup(sapi_module_struct *sapi_module)
 	return SUCCESS;
 }
 
+#if PHP_VERSION_ID >= 70000
+static size_t ub_write(const char *str, size_t str_length TSRMLS_DC)
+#else
 static int ub_write(const char *str, uint str_length TSRMLS_DC)
+#endif
 {
 	/* This is not unbuffered ;-) */
 	printf("%s", str);
@@ -126,7 +130,13 @@ int pconn_init_php()
 	if (pconn_module.startup(&pconn_module)==FAILURE) {
 		return FAILURE;
 	}
-#if PHP_VERSION_ID >= 50400
+#if PHP_VERSION_ID >= 70000
+	{
+		zend_string *pconn_var_name = zend_string_init(PCONN_VAR, PCONN_SIZE-1, 0);
+		zend_register_auto_global(pconn_var_name, 0, NULL TSRMLS_CC);
+		zend_string_release(pconn_var_name);
+	}
+#elif PHP_VERSION_ID >= 50400
 	zend_register_auto_global(PCONN_VAR, PCONN_SIZE-1, 0, NULL TSRMLS_CC);
 #else
 	zend_register_auto_global(PCONN_VAR, PCONN_SIZE-1, NULL TSRMLS_CC);
