@@ -17,6 +17,8 @@
 #define PCONN_MINOR_VERSION 9
 #define PCONN_RELEASE_VERSION 0
 
+extern int pconn_report_progress;
+
 /*
  * Local variables:
  * tab-width: 4

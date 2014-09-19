@@ -42,11 +42,13 @@ const opt_struct OPTIONS[] = {
 	{'t', 1, "threads"},
 #endif
 	{'n', 1, "iterations"},
+	{'p', 0, "progress"},
 	{'a', 1, "init-script"},
 	{'z', 1, "shutdown-script"},
 	{'-', 0, NULL}
 };
 
+int pconn_report_progress = 0;
 
 static void run_php(req_data *data TSRMLS_DC)
 {
@@ -68,6 +70,12 @@ static void run_php(req_data *data TSRMLS_DC)
 			break;
 #endif
 		}
+		if (pconn_report_progress) {
+			printf("(%d/%d done)\r", data->iterations - i, data->iterations);
+		}
+	}
+	if (pconn_report_progress) {
+		printf("\n");
 	}
 	if (data->shutdown_script) {
 		pconn_do_request(data->shutdown_script, &user_data, &user_data_len TSRMLS_CC);
@@ -143,6 +151,11 @@ static void usage(const char *name, const int status)
 #ifdef ZTS
 	                "  -t <threads>     Set the number of concurrent threads (default=1, max=%i)\n"
 #endif
+					"  -p               Report progress (hides regular script output"
+#ifdef ZTS
+					"\n                   limited use with multiple threads"
+#endif
+					")\n"
 	                "  -a <startup>     Startup script, run once on start\n"
 	                "  -z <shutdown>    Shutdown script, executed one on end\n"
 	                "  <script>         Main script to be executed multiple times\n\n"
@@ -220,6 +233,9 @@ int main(int argc, char *argv[])
 			if (data.iterations <= 0) {
 				usage(argv[0], 1); /*terminates */
 			}
+			break;
+		case 'p':
+			pconn_report_progress = 1;
 			break;
 		default:
 			usage(argv[0], 1); /* terminates */

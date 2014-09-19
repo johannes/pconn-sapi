@@ -45,7 +45,9 @@ static int ub_write(const char *str, uint str_length TSRMLS_DC)
 #endif
 {
 	/* This is not unbuffered ;-) */
-	printf("%s", str);
+	if (!pconn_report_progress) {
+		printf("%s", str);
+	}
 	return str_length;
 }
 
