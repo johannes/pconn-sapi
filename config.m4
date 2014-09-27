@@ -9,7 +9,7 @@ PHP_ARG_ENABLE(pconn,,
 
 if test "$PHP_PCONN" != "no"; then
   PHP_ADD_MAKEFILE_FRAGMENT($abs_srcdir/sapi/pconn/Makefile.frag)
-  SAPI_PCONN_PATH=sapi/pconn/pconn
+  SAPI_PCONN_PATH=sapi/pconn/php-pconn
   PHP_SUBST(SAPI_PCONN_PATH)
   PHP_SELECT_SAPI(pconn, program, main.c  pconnect-module.c  pconnect-sapi.c, "", '$(SAPI_PCONN_PATH)')
   if test $PHP_VERSION_ID -ge 50400; then

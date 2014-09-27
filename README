@@ -17,16 +17,16 @@ source tree, then run `./buildconf` and `./configure` PHP using the
 --enable-pconn switch. For testing multithreading make use of
 the --enable-maintainer-zts switch.
 
-When running `make` a binary `sapi/pconn/pconn` is created. Currently this won't
-be installed by make install.
+When running `make` a binary `sapi/pconn/php-pconn` is created. Currently this
+won't be installed by `make install`.
 
 
 This package includes a simple sample:
-$ ./pconn -a samples/start.php -z samples/shutdown.php -n10 samples/main.php 
+$ ./php-pconn -a samples/start.php -z samples/shutdown.php -n10 samples/main.php 
 
 If your PHP was compiled with --enable-maintainer-zts you can run multiple
 threads:
-$ ./pconn -a samples/start.php -z samples/shutdown.php -n10 -t5 samples/main.php 
+$ ./php-pconn -a samples/start.php -z samples/shutdown.php -n10 -t5 samples/main.php 
 
 This will first call start.php then 10x main.php and shutdown.php in the second
 case this will be done in 5 threads in parallel. This sample also demonstrates
