@@ -17,7 +17,9 @@
 #include <ext/standard/info.h>
 #include <ext/standard/php_var.h>
 #include <main/php_variables.h>
+#ifdef JO0
 #include <ext/standard/php_smart_str.h>
+#endif
 
 #include "pconnect.h"
 #include "pconnect-module.h"
