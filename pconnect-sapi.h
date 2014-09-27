@@ -1,6 +1,6 @@
 /*
   +----------------------------------------------------------------------+
-  | Copyright (c) 2009-2012, Johannes Schlüter <johannes@schlueters.de>  |
+  | Copyright (c) 2009-2014, Johannes Schlüter <johannes@schlueters.de>  |
   | All rights reserved.                                                 |
   +----------------------------------------------------------------------+
   | Redistribution and use in source and binary forms, with or without   |

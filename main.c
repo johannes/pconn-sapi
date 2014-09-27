@@ -1,6 +1,6 @@
 /*
   +----------------------------------------------------------------------+
-  | Copyright (c) 2009-2012, Johannes Schlüter <johannes@schlueters.de>  |
+  | Copyright (c) 2009-2014, Johannes Schlüter <johannes@schlueters.de>  |
   | All rights reserved.                                                 |
   +----------------------------------------------------------------------+
   | Redistribution and use in source and binary forms, with or without   |
@@ -173,7 +173,7 @@ static void usage(const char *name, const int status)
 static void pconn_version()
 {
 	printf("pconn test %s for PHP %s (built: %s %s) %s %s\n"
-			"Copyright (c) 2009-2012, Johannes Schlueter\n"
+			"Copyright (c) 2009-2014, Johannes Schlueter\n"
 			"This product includes PHP software, freely available from <http://www.php.net/software/>.\n",
 			PCONN_VERSION, PHP_VERSION, __DATE__, __TIME__,
 #if ZEND_DEBUG && defined(HAVE_GCOV)
