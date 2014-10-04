@@ -232,25 +232,27 @@ static int init_script_data(req_data *data, int is_phpt)
 	int fd;
 	struct stat ssb;
 
-	if (!(fd = open(data->filename, O_RDONLY))) {
-		printf("Failed opening file\n");
+	if ((fd = open(data->filename, O_RDONLY)) == -1) {
+		perror("Failed opening file");
 		return 1;
 	}
 
 	if (fstat(fd, &ssb)) {
+		perror("Failed to stat the opened file");
 		close(fd);
-		printf("Failed to stat the opened file");
 		return 1;
 	}
 
 	data->mmapped_len = ssb.st_size;
 	data->mmapped = mmap(NULL, data->mmapped_len, PROT_READ, MAP_PRIVATE, fd, 0);
-	close(fd); 
 
 	if (!data->mmapped) {
-		printf("Error while mapping file content");
+		perror("Error while mapping file content");
+		close(fd);
 		return 1;
 	}
+
+	close(fd);
 
 	if (is_phpt) {
 		if (process_phpt(data)) {
@@ -328,6 +330,8 @@ int main(int argc, char *argv[])
 
 	data.filename = argv[php_optind];
 	if (init_script_data(&data, is_phpt)) {
+		pconn_shutdown_php();
+		munmap(data.mmapped, data.mmapped_len);
 		return 1;
 	}
 
