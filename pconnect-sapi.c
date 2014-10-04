@@ -163,6 +163,8 @@ int pconn_shutdown_php()
 #ifdef ZTS
 	tsrm_shutdown();
 #endif
+
+	free(pconn_module.ini_entries);
 	return SUCCESS;
 }
 
@@ -188,12 +190,11 @@ int pconn_phpinfo()
 	return SUCCESS;
 }
 
-int pconn_do_request(char *filename, unsigned char **user_data, size_t *user_data_len TSRMLS_DC)
+int pconn_do_request(zend_file_handle *file_handle, char *filename, unsigned char **user_data, size_t *user_data_len TSRMLS_DC)
 {
 	int retval = FAILURE; /* failure by default */
 	zval *z_user_data_p;
 	unsigned char *user_data_p = *user_data;
-	zend_file_handle file_handle;
 
 	SG(options) |= SAPI_OPTION_NO_CHDIR;
 	SG(request_info).argc=0;
@@ -207,12 +208,7 @@ int pconn_do_request(char *filename, unsigned char **user_data, size_t *user_dat
 	SG(headers_sent) = 1;
 	SG(request_info).no_headers = 1;
 	php_register_variable("PHP_SELF", filename, NULL TSRMLS_CC);
-	
-	file_handle.type = ZEND_HANDLE_FILENAME;
-	file_handle.filename = filename;
-	file_handle.handle.fp = NULL;
-	file_handle.opened_path = NULL;
-	file_handle.free_filename = 0;
+
 
 
 	if (user_data) {
@@ -239,7 +235,7 @@ int pconn_do_request(char *filename, unsigned char **user_data, size_t *user_dat
 	}
 
 	zend_first_try {
-		retval = php_execute_script(&file_handle TSRMLS_CC);
+		retval = php_execute_script(file_handle TSRMLS_CC);
 	} zend_end_try();
 
 	if (user_data) {
@@ -269,6 +265,36 @@ int pconn_do_request(char *filename, unsigned char **user_data, size_t *user_dat
 	return (retval == SUCCESS) ? SUCCESS : FAILURE;
 }
 
+
+int pconn_do_request_f(char *filename, unsigned char **user_data, size_t *user_data_len TSRMLS_DC)
+{
+	zend_file_handle file_handle;
+	file_handle.type = ZEND_HANDLE_FILENAME;
+	file_handle.filename = filename;
+	file_handle.handle.fp = NULL;
+	file_handle.opened_path = NULL;
+	file_handle.free_filename = 0;
+
+	return pconn_do_request(&file_handle, filename, user_data, user_data_len TSRMLS_CC);
+}
+
+int pconn_do_request_d(char *filename, char *data, size_t data_len, unsigned char **user_data, size_t *user_data_len TSRMLS_DC)
+{
+	zend_file_handle file_handle;
+	file_handle.filename = filename;
+	file_handle.opened_path = NULL;
+	file_handle.free_filename = 0;
+	file_handle.handle.stream.handle = NULL;
+	file_handle.handle.stream.reader = (zend_stream_reader_t)_php_stream_read;
+	file_handle.handle.stream.fsizer = NULL;
+	file_handle.handle.stream.isatty = 0;
+	file_handle.handle.stream.closer   = NULL;
+	file_handle.handle.stream.mmap.buf = data;
+	file_handle.handle.stream.mmap.len = data_len;
+	file_handle.type = ZEND_HANDLE_MAPPED;
+
+	return pconn_do_request(&file_handle, filename, user_data, user_data_len TSRMLS_CC);
+}
 
 /*
  * Local variables:

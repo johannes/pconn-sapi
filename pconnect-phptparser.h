@@ -11,27 +11,37 @@
   +----------------------------------------------------------------------+
 */
 
-#ifndef SUCCESS
-#define SUCCESS 0
-#define FAILURE -1 
+#ifndef PCONNECT_PHPTPARSER_H
+#define PCONNECT_PHPTPARSER_H
+
+typedef struct {
+	char *begin;
+	char *end;
+} phpt_section;
+
+enum expect_type {
+	EXPECT,
+	EXPECTF,
+	EXPECTREGEX
+};
+
+struct phpt {
+	phpt_section test;
+	phpt_section ini;
+	phpt_section file;
+	phpt_section xfail;
+	enum expect_type type;
+	phpt_section expect;
+};
+
+void parse_phpt(struct phpt *phpt, char *buffer, char *end);
+
 #endif
-
-#include "Zend/zend.h"
-#include <TSRM.h>
-
-int pconn_init_php();
-int pconn_shutdown_php();
-void pconn_set_ini_file(const char *file);
-int pconn_phpinfo();
-int pconn_do_request(zend_file_handle *file_handle, char *filename, unsigned char **user_data, size_t *user_data_len TSRMLS_DC);
-int pconn_do_request_f(char *filename, unsigned char **user_data, size_t *user_data_len TSRMLS_DC);
-int pconn_do_request_d(char *filename, char *data, size_t data_len, unsigned char **user_data, size_t *user_data_len TSRMLS_DC);
-
 /*
  * Local variables:
  * tab-width: 4
  * c-basic-offset: 4
  * End:
- * vim600: noet sw=4 ts=4 fdm=marker
- * vim<600: noet sw=4 ts=4
+ * vim600: ft=c noet sw=4 ts=4 fdm=marker
+ * vim<600: ft=c noet sw=4 ts=4
  */

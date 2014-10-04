@@ -18,17 +18,28 @@
 #include <unistd.h>
 #endif
 #include <stdlib.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "pconnect.h"
 #include "main/php_version.h"
 #include "main/php_getopt.h"
+#include "main/php_streams.h"
 #include "pconnect-sapi.h"
+#include "pconnect-phptparser.h"
 
 #define MAX_THREADS 255
 
 typedef struct {
 	int iterations;
-	char *main_script;
+	char *phpt_skipif_script_data;
+	char *filename;
+	char *mmapped;
+	size_t mmapped_len;
+	struct phpt phpt;
 	char *startup_script;
 	char *shutdown_script;
 } req_data;
@@ -45,6 +56,7 @@ const opt_struct OPTIONS[] = {
 	{'p', 0, "progress"},
 	{'a', 1, "init-script"},
 	{'z', 1, "shutdown-script"},
+	{10,  0, "phpt"},
 	{'-', 0, NULL}
 };
 
@@ -57,12 +69,17 @@ static void run_php(req_data *data TSRMLS_DC)
 	int i = data->iterations;
 
 	if (data->startup_script) {
-		pconn_do_request(data->startup_script, &user_data, &user_data_len TSRMLS_CC);
+		pconn_do_request_f(data->startup_script, &user_data, &user_data_len TSRMLS_CC);
 	}
-	
+
 	while (i--) {
 		int retval;
-		retval = pconn_do_request(data->main_script, &user_data, &user_data_len TSRMLS_CC);
+
+		if (data->phpt.file.begin) {
+			retval = pconn_do_request_d(data->filename, data->phpt.file.begin, data->phpt.file.end - data->phpt.file.begin, &user_data, &user_data_len TSRMLS_CC);
+		} else {
+			retval = pconn_do_request_d(data->filename, data->mmapped, data->mmapped_len, &user_data, &user_data_len TSRMLS_CC);
+		}
 
 		if (retval == FAILURE) {
 #ifdef FIX_ME
@@ -78,7 +95,7 @@ static void run_php(req_data *data TSRMLS_DC)
 		printf("\n");
 	}
 	if (data->shutdown_script) {
-		pconn_do_request(data->shutdown_script, &user_data, &user_data_len TSRMLS_CC);
+		pconn_do_request_f(data->shutdown_script, &user_data, &user_data_len TSRMLS_CC);
 	}
 	if (user_data) {
 	    free(user_data);
@@ -141,7 +158,7 @@ static void usage(const char *name, const int status)
 #ifdef ZTS
 		                 " [-t <threads>]"
 #endif
-		                 " [-a <startup>] [-z <shutdown>] <script>\n"
+		                 " [-a <startup>] [-z <shutdown>] [--phpt] <script>\n"
 	                "       %s -v\n"
 	                "       %s -i\n\n"
 					"  -v               Print version information\n"
@@ -158,6 +175,7 @@ static void usage(const char *name, const int status)
 					")\n"
 	                "  -a <startup>     Startup script, executed once on start\n"
 	                "  -z <shutdown>    Shutdown script, executed once on end\n"
+	                "  --phpt           Treat <script> as phpt\n"
 	                "  <script>         Main script to be executed multiple times\n\n"
 			, name
 			, name
@@ -193,6 +211,60 @@ static void pconn_version()
 			);
 }
 
+static int process_phpt(req_data *data)
+{
+	if (data->mmapped_len < 100) {
+		printf("Too small, can't be a test!\n");
+		return 1;
+	}
+	if (memcmp("--TEST--", data->mmapped, sizeof("--TEST--")-1)) {
+		printf("Not a phpt test file\n");
+		return 1;
+	}
+
+	parse_phpt(&data->phpt, data->mmapped, data->mmapped + data->mmapped_len);
+
+	return 0;
+}
+
+static int init_script_data(req_data *data, int is_phpt)
+{
+	int fd;
+	struct stat ssb;
+
+	if (!(fd = open(data->filename, O_RDONLY))) {
+		printf("Failed opening file\n");
+		return 1;
+	}
+
+	if (fstat(fd, &ssb)) {
+		close(fd);
+		printf("Failed to stat the opened file");
+		return 1;
+	}
+
+	data->mmapped_len = ssb.st_size;
+	data->mmapped = mmap(NULL, data->mmapped_len, PROT_READ, MAP_PRIVATE, fd, 0);
+	close(fd); 
+
+	if (!data->mmapped) {
+		printf("Error while mapping file content");
+		return 1;
+	}
+
+	if (is_phpt) {
+		if (process_phpt(data)) {
+			return 1;
+		}
+
+		printf("Running test: ");
+		fflush(stdout);
+		write(STDOUT_FILENO, data->phpt.test.begin, data->phpt.test.end - data->phpt.test.begin);
+	}
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 #ifdef ZTS
@@ -201,7 +273,8 @@ int main(int argc, char *argv[])
 	int opt;
 	char *php_optarg = NULL;
 	int php_optind = 1;
-	req_data data = { 2, NULL, NULL, NULL };
+	req_data data = { 2, NULL, NULL, NULL, 0, {}, NULL, NULL };
+	int is_phpt = 0;
 
 	while ((opt = php_getopt(argc, argv, OPTIONS, &php_optarg, &php_optind, 0, 2)) != -1) {
 		switch (opt) {
@@ -237,6 +310,9 @@ int main(int argc, char *argv[])
 		case 'p':
 			pconn_report_progress = 1;
 			break;
+		case 10:
+			is_phpt = 1;
+			break;
 		default:
 			usage(argv[0], 1); /* terminates */
 		case 'h':		
@@ -248,15 +324,21 @@ int main(int argc, char *argv[])
 		usage(argv[0], 1); /* terminates */
 	}
 
-	data.main_script = argv[php_optind];
-	
 	pconn_init_php();
+
+	data.filename = argv[php_optind];
+	if (init_script_data(&data, is_phpt)) {
+		return 1;
+	}
+
 #ifdef ZTS
 	run_threads(&data, threads);
 #else
 	run_php(&data);
 #endif
+
 	pconn_shutdown_php();
+	munmap(data.mmapped, data.mmapped_len);
 	return 0;
 }
 
