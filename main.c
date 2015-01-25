@@ -1,13 +1,13 @@
 /*
   +----------------------------------------------------------------------+
-  | Copyright (c) 2009-2014, Johannes Schlüter <johannes@schlueters.de>  |
+  | Copyright (c) 2009-2015, Johannes Schlüter <johannes@schlueters.de>  |
   | All rights reserved.                                                 |
   +----------------------------------------------------------------------+
   | Redistribution and use in source and binary forms, with or without   |
   | modification, are permitted provided that the conditions which are   |
   | bundled with this package in the file LICENSE.                       |
   | This product includes PHP software, freely available from            |
-  |<http://www.php.net/software/>                                        |
+  | <http://www.php.net/software/>                                       |
   +----------------------------------------------------------------------+
 */
 
@@ -23,7 +23,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <pthread.h>
 
+#include "TSRM/TSRM.h"
 #include "pconnect.h"
 #include "main/php_version.h"
 #include "main/php_getopt.h"
@@ -191,7 +193,7 @@ static void usage(const char *name, const int status)
 static void pconn_version()
 {
 	printf("pconn test %s for PHP %s (built: %s %s) %s %s\n"
-			"Copyright (c) 2009-2014, Johannes Schlueter\n"
+			"Copyright (c) 2009-2015, Johannes Schlueter\n"
 			"This product includes PHP software, freely available from <http://www.php.net/software/>.\n",
 			PCONN_VERSION, PHP_VERSION, __DATE__, __TIME__,
 #if ZEND_DEBUG && defined(HAVE_GCOV)
