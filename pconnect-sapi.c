@@ -132,11 +132,7 @@ int pconn_init_php()
 		return FAILURE;
 	}
 #if PHP_VERSION_ID >= 70000
-	{
-		zend_string *pconn_var_name = zend_string_init(PCONN_VAR, PCONN_SIZE-1, 0);
-		zend_register_auto_global(pconn_var_name, 0, NULL TSRMLS_CC);
-		zend_string_release(pconn_var_name);
-	}
+	zend_register_auto_global(zend_string_init(PCONN_VAR, PCONN_SIZE - 1, 1), 0, NULL TSRMLS_CC);
 #elif PHP_VERSION_ID >= 50400
 	zend_register_auto_global(PCONN_VAR, PCONN_SIZE-1, 0, NULL TSRMLS_CC);
 #else
@@ -195,6 +191,10 @@ int pconn_do_request(zend_file_handle *file_handle, char *filename, unsigned cha
 	int retval = FAILURE; /* failure by default */
 	zval *z_user_data_p;
 	unsigned char *user_data_p = *user_data;
+
+#ifdef ZTS
+	(void)ts_resource(0);
+#endif
 
 	SG(options) |= SAPI_OPTION_NO_CHDIR;
 	SG(request_info).argc=0;
